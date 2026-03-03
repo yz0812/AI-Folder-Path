@@ -66,7 +66,7 @@ class CopyAIPathAction : AnAction() {
             if (isIdentifierSelection(selectedText, elementAtStart)) {
                 val resolvedElement = resolveIdentifier(elementAtStart)
                 return when (resolvedElement) {
-                    is PsiMethod -> "$basePath ${resolvedElement.name}"
+                    is PsiMethod -> "$basePath ${buildMethodSignature(resolvedElement)}"
                     is PsiClass -> basePath
                     else -> basePath
                 }
@@ -97,7 +97,7 @@ class CopyAIPathAction : AnAction() {
         val resolved = resolveIdentifier(element)
 
         return when (resolved) {
-            is PsiMethod -> "$basePath ${resolved.name}"
+            is PsiMethod -> "$basePath ${buildMethodSignature(resolved)}"
             is PsiClass -> basePath
             else -> basePath
         }
@@ -151,6 +151,17 @@ class CopyAIPathAction : AnAction() {
 
     private fun findContainingMethod(element: PsiElement?): PsiMethod? {
         return PsiTreeUtil.getParentOfType(element, PsiMethod::class.java, true)
+    }
+
+    /**
+     * 构建方法签名：methodName(Type1 param1, Type2 param2): ReturnType
+     */
+    private fun buildMethodSignature(method: PsiMethod): String {
+        val params = method.parameterList.parameters.joinToString(", ") { param ->
+            "${param.type.presentableText} ${param.name}"
+        }
+        val returnType = method.returnType?.presentableText ?: "void"
+        return "${method.name}($params): $returnType"
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
