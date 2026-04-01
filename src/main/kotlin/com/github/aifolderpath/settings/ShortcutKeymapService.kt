@@ -97,10 +97,12 @@ open class ShortcutKeymapService(
         return editablePage.cards.flatMap { card ->
             val targetShortcut = card.editedShortcut ?: return@flatMap emptyList()
             val releasingOwners = releasingActionIdsByShortcut[targetShortcut].orEmpty().toSet()
+            val ignoredOwners = ignoredConflictOwners(card.definition.actionId)
 
             keymap.getActionIdList(targetShortcut)
                 .filterNot { it == card.definition.actionId }
                 .filterNot { it in managedActionIds && it in releasingOwners }
+                .filterNot { it in ignoredOwners }
                 .distinct()
                 .map { ownerActionId ->
                     val ownerDisplayName = ActionManager.getInstance().getAction(ownerActionId)?.templateText ?: ownerActionId
@@ -132,13 +134,23 @@ open class ShortcutKeymapService(
         editablePage: EditableShortcutPage,
     ) {
         editablePage.cards.forEach { card ->
-            targetKeymap.getShortcuts(card.definition.actionId)
-                .filterIsInstance<KeyboardShortcut>()
-                .forEach { shortcut -> targetKeymap.removeShortcut(card.definition.actionId, shortcut) }
+            val actionIdsToRewrite = setOf(card.definition.actionId) + ignoredConflictOwners(card.definition.actionId)
+            actionIdsToRewrite.forEach { actionId ->
+                targetKeymap.getShortcuts(actionId)
+                    .filterIsInstance<KeyboardShortcut>()
+                    .forEach { shortcut -> targetKeymap.removeShortcut(actionId, shortcut) }
+            }
 
             card.editedShortcut?.let { shortcut ->
                 targetKeymap.addShortcut(card.definition.actionId, shortcut)
             }
+        }
+    }
+
+    private fun ignoredConflictOwners(actionId: String): Set<String> {
+        return when (actionId) {
+            "AIFolderPath.CopyOptionsAction" -> setOf("AIFolderPath.CopyAction")
+            else -> emptySet()
         }
     }
 

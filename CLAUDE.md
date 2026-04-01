@@ -107,12 +107,19 @@ AIFolderPath/
 - 修改输出拼接逻辑 --> `CopyAIPathAction.kt` 的 `buildFromEditor()`
 - 添加新 Action --> `plugin.xml` 注册 + 新建 Action 类
 
-## 已知问题
+## MCP 工具使用优先级
 
-- `verifyPluginConfiguration` 报告 JDK 21 与 sinceBuild=241 (IntelliJ 2024.1) 不兼容，IntelliJ 2024.1 要求 targetCompatibility=17。需根据实际运行环境决定是否降级 JDK 或提升 sinceBuild。
+- **语义搜索 / 不确定位置 / 需要理解上下文**：优先用 `ace-tool`
+- **已知类、方法、符号**：优先用 `Serena`
+- **IDE 原生能力**：优先用 `idea`
+- **已知文件或精确关键词**：直接用 `Read` / `Grep` / `Glob` / `Edit`
 
-## 变更记录 (Changelog)
+### idea MCP 适用场景
+- 查文件报错、警告：`get_file_problems`
+- 查符号定义、引用、文档：`get_symbol_info`
+- 安全重命名符号：`rename_refactoring`
+- 查项目模块、依赖、运行配置：`get_project_modules` / `get_project_dependencies` / `get_run_configurations`
+- 需要 IDE 索引搜索时：`search_in_files_by_text` / `search_in_files_by_regex` / `find_files_by_name_keyword`
 
-| 时间 | 操作 |
-|------|------|
-| 2026-02-27 14:08:36 | 初始化架构扫描，生成根级 CLAUDE.md |
+### idea MCP 禁止使用
+- 编译或执行现有运行配置：`build_project` / `execute_run_configuration`
