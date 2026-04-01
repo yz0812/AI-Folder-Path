@@ -24,7 +24,7 @@ object PluginShortcutDefinitions {
     val copyAiUsages = ShortcutActionDefinition(
         actionId = "AIFolderPath.CopyRefAction",
         label = "Copy AI Usages",
-        defaultShortcut = KeyboardShortcut(KeyStroke.getKeyStroke("ctrl alt P"), null),
+        defaultShortcut = KeyboardShortcut(KeyStroke.getKeyStroke("ctrl alt 0"), null),
         description = "复制定义和前 10 个 usages（仅在增强动作可用时显示）",
     )
 

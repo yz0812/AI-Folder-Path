@@ -17,11 +17,11 @@ AI Folder Path 是一个面向 Claude、Cursor、Copilot Chat 等 AI 编程工�
 | 功能 | 场景 | 默认快捷键 | 入口 | 输出说明 |
 |---|---|---|---|---|
 | Copy AI | 编辑器 / 项目视图 | `Alt + P` | 编辑器右键 + 快捷键 | Alt+P 统一入口：编辑器默认复制 Anchor；项目视图会回退到 Path |
-| Copy AI Path | 编辑器 / 项目视图 | 无 | 编辑器右键、Project 视图右键 | 复制文件、目录、方法签名或多选路径列表 |
+| Copy AI Path | 编辑器 / 项目视图 | 无 | 编辑器右键、Project 视图右键 > Copy AI | 复制文件、目录、方法签名或多选路径列表 |
 | Copy AI Anchor | 编辑器 | 无 | 编辑器右键 | 复制 `路径 + 符号 + 行号/行范围` |
 | Copy AI Context | 编辑器 | 无 | 编辑器右键 | 复制多行上下文头：`path / class / method / lines` |
-| Copy AI Usages | 编辑器 | `Ctrl + Alt + P` | 编辑器右键 + 快捷键 | 复制定义锚点和前 10 个 usages |
-| Copy AI Tree | 项目视图 | 无 | Project 视图右键 | 复制目录树摘要或多选树结构 |
+| Copy AI Usages | 编辑器 | `Ctrl + Alt + 0` | 编辑器右键 + 快捷键 | 复制定义锚点和前 10 个 usages |
+| Copy AI Tree | 项目视图 | 无 | Project 视图右键 > Copy AI | 复制目录树摘要或多选树结构 |
 
 ## 输出格式示例
 
@@ -135,11 +135,11 @@ usage[2]: @demo/src/main/kotlin/com/example/LoginController.kt LoginController.s
 | 功能 | 默认快捷键 | 菜单位置 |
 |---|---|---|
 | Copy AI | `Alt + P` | 编辑器右键 |
-| Copy AI Usages | `Ctrl + Alt + P` | 编辑器右键 |
-| Copy AI Path | 无 | 编辑器右键 / Project 视图右键 |
+| Copy AI Usages | `Ctrl + Alt + 0` | 编辑器右键 |
+| Copy AI Path | 无 | 编辑器右键 / Project 视图右键 > Copy AI |
 | Copy AI Anchor | 无 | 编辑器右键 |
 | Copy AI Context | 无 | 编辑器右键 |
-| Copy AI Tree | 无 | Project 视图右键 |
+| Copy AI Tree | 无 | Project 视图右键 > Copy AI |
 
 复制成功后会弹出气泡通知。
 
@@ -162,7 +162,7 @@ usage[2]: @demo/src/main/kotlin/com/example/LoginController.kt LoginController.s
 说明：
 
 - 当前设置页只支持**单击组合键**
-- 例如 `Alt + P`、`Ctrl + Alt + P`
+- 例如 `Alt + P`、`Ctrl + Alt + 0`
 - 不支持两段式快捷键
 
 ## 环境要求

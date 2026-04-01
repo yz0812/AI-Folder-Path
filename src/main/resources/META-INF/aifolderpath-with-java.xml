@@ -14,7 +14,7 @@
                 class="com.github.aifolderpath.CopyAIRefAction"
                 text="Copy AI Usages"
                 description="Copy definition and usages in AI-friendly format">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt P"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt 0"/>
         </action>
     </actions>
 </idea-plugin>
