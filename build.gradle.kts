@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.aifolderpath"
-version = "1.0.7"
+version = "1.0.8"
 
 repositories {
     mavenCentral()
@@ -55,7 +55,7 @@ intellijPlatform {
         """.trimIndent()
         ideaVersion {
             sinceBuild = "251"
-            untilBuild = "253.*"
+            untilBuild = "261.*"
         }
         vendor {
             name = "AIFolderPath"
