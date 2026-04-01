@@ -15,13 +15,20 @@ open class ShortcutKeymapService(
     },
     private val keymapRegistry: ShortcutKeymapRegistry = IdeShortcutKeymapRegistry(),
 ) {
+    private fun availableDefinitions(): List<ShortcutActionDefinition> {
+        val actionManager = ActionManager.getInstance()
+        return PluginShortcutDefinitions.all.filter { definition ->
+            actionManager.getAction(definition.actionId) != null
+        }
+    }
+
     fun readPageState(): ShortcutPageState = readPageState(activeKeymapProvider())
 
     fun readPageState(keymap: Keymap): ShortcutPageState {
         return ShortcutPageState(
             keymapName = keymap.presentableName,
             isReadOnly = !keymap.canModify(),
-            actions = PluginShortcutDefinitions.all.map { definition ->
+            actions = availableDefinitions().map { definition ->
                 buildActionState(definition, keymap)
             },
         )
@@ -37,7 +44,7 @@ open class ShortcutKeymapService(
             editableKeymapName = editableKeymap.presentableName,
             editableKeymap = editableKeymap,
             readOnly = !keymap.canModify(),
-            cards = PluginShortcutDefinitions.all.map { definition ->
+            cards = availableDefinitions().map { definition ->
                 val keyboardShortcuts = editableKeymap.getShortcuts(definition.actionId)
                     .filterIsInstance<KeyboardShortcut>()
                     .sortedBy { KeymapUtil.getShortcutText(it) }

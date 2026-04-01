@@ -7,23 +7,24 @@
     <p><b>中文</b></p>
     <ul>
       <li>支持 Copy AI / Path / Anchor / Context / Usages / Tree 多种 AI 友好输出</li>
-      <li>Alt+P 在编辑器默认复制符号锚点，在项目视图自动回退为路径复制</li>
+      <li>Alt+P 按当前默认动作复制；当增强动作不可用时自动回退为路径复制</li>
       <li>支持文件、目录、多选路径、目录树、类、方法、代码选区与调用点列表</li>
       <li>支持 Maven / Gradle 多模块路径解析，适合 Claude、Cursor、Copilot Chat 等 AI 编程工具</li>
-      <li>内置快捷键设置页，可配置 Copy AI 与 Copy AI Usages，并自动处理只读 Keymap 副本</li>
+      <li>内置快捷键设置页，可配置当前可用动作，并自动处理只读 Keymap 副本</li>
     </ul>
     <p><b>English</b></p>
     <ul>
       <li>Supports Copy AI / Path / Anchor / Context / Usages / Tree for AI-ready code references</li>
-      <li>Alt+P copies a symbol anchor in the editor and falls back to path copy in the Project view</li>
+      <li>Alt+P uses the current default action and falls back to path copy when enhanced actions are unavailable</li>
       <li>Handles files, directories, multi-selection paths, directory trees, classes, methods, selections, and call-site lists</li>
       <li>Resolves Maven / Gradle multi-module paths for Claude, Cursor, Copilot Chat, and other AI coding tools</li>
-      <li>Includes a built-in shortcut settings page for Copy AI and Copy AI Usages, with read-only keymap duplication support</li>
+      <li>Includes a built-in shortcut settings page for currently available actions, with read-only keymap duplication support</li>
     </ul>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends optional="true" config-file="aifolderpath-with-java.xml">com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="AIFolderPath.Notification" displayType="BALLOON"/>
@@ -40,33 +41,12 @@
                 text="Copy AI"
                 description="Copy AI-friendly reference using the current Alt+P action">
             <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <action id="AIFolderPath.CopyAction"
                 class="com.github.aifolderpath.CopyAIPathAction"
                 text="Copy AI Path"
                 description="Copy file path in AI-friendly format">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-        </action>
-        <action id="AIFolderPath.CopyAnchorAction"
-                class="com.github.aifolderpath.CopyAISymbolAnchorAction"
-                text="Copy AI Anchor"
-                description="Copy current symbol anchor in AI-friendly format">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-        </action>
-        <action id="AIFolderPath.CopyContextAction"
-                class="com.github.aifolderpath.CopyAIContextAction"
-                text="Copy AI Context"
-                description="Copy current symbol context in AI-friendly format">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-        </action>
-        <action id="AIFolderPath.CopyRefAction"
-                class="com.github.aifolderpath.CopyAIRefAction"
-                text="Copy AI Usages"
-                description="Copy definition and usages in AI-friendly format">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt P"/>
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <action id="AIFolderPath.CopyTreeAction"
                 class="com.github.aifolderpath.CopyAITreeAction"

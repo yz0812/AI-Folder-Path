@@ -32,7 +32,7 @@ enum class AltPActionOption(
 
     companion object {
         fun fromId(value: String?): AltPActionOption {
-            return entries.firstOrNull { it.id == value } ?: CopyAnchor
+            return entries.firstOrNull { it.id == value } ?: CopyPath
         }
     }
 }
@@ -45,6 +45,6 @@ object AltPActionOptionStore {
     }
 
     fun set(value: AltPActionOption) {
-        PropertiesComponent.getInstance().setValue(KEY, value.id, AltPActionOption.CopyAnchor.id)
+        PropertiesComponent.getInstance().setValue(KEY, value.id, AltPActionOption.CopyPath.id)
     }
 }

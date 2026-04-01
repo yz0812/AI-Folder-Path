@@ -1,0 +1,20 @@
+<idea-plugin>
+    <actions>
+        <action id="AIFolderPath.CopyAnchorAction"
+                class="com.github.aifolderpath.CopyAISymbolAnchorAction"
+                text="Copy AI Anchor"
+                description="Copy current symbol anchor in AI-friendly format">
+        </action>
+        <action id="AIFolderPath.CopyContextAction"
+                class="com.github.aifolderpath.CopyAIContextAction"
+                text="Copy AI Context"
+                description="Copy current symbol context in AI-friendly format">
+        </action>
+        <action id="AIFolderPath.CopyRefAction"
+                class="com.github.aifolderpath.CopyAIRefAction"
+                text="Copy AI Usages"
+                description="Copy definition and usages in AI-friendly format">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt P"/>
+        </action>
+    </actions>
+</idea-plugin>

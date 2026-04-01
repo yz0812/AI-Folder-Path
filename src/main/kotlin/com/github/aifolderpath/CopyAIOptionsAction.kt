@@ -30,12 +30,16 @@ class CopyAIOptionsAction : AnAction() {
     private fun resolveDelegateAction(e: AnActionEvent): AnAction? {
         val actionManager = ActionManager.getInstance()
         val selectedActionId = AltPActionOptionStore.get().actionId
-        val delegateActionId = if (e.getData(CommonDataKeys.EDITOR) == null && selectedActionId in editorOnlyActionIds) {
+        val preferredActionId = if (e.getData(CommonDataKeys.EDITOR) == null && selectedActionId in editorOnlyActionIds) {
             COMPAT_PATH_ACTION_ID
         } else {
             selectedActionId
         }
-        return actionManager.getAction(delegateActionId) ?: actionManager.getAction(COMPAT_PATH_ACTION_ID)
+        val preferredAction = actionManager.getAction(preferredActionId)
+        if (preferredAction != null) {
+            return preferredAction
+        }
+        return actionManager.getAction(COMPAT_PATH_ACTION_ID)
     }
 
     companion object {
