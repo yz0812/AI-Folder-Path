@@ -4,20 +4,40 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
 object PathTreeFormatter {
+    /**
+     * 默认最多展开 2 层目录，避免目录树复制过长。
+     */
     private const val DEFAULT_MAX_DEPTH = 2
+
+    /**
+     * 默认最多渲染 50 个节点，避免一次复制过多内容。
+     */
     private const val DEFAULT_MAX_NODES = 50
 
+    /**
+     * 规范化后的路径项。
+     *
+     * - normalizedPath：完整标准化路径，用于排序和去重
+     * - segments：按 `/` 拆开的路径片段，用于构树
+     * - directory：当前项是否为目录
+     */
     private data class PathEntry(
         val normalizedPath: String,
         val segments: List<String>,
         val directory: Boolean,
     )
 
+    /**
+     * 内存中的树节点结构。
+     */
     private data class TreeNode(
         var directory: Boolean = true,
         val children: LinkedHashMap<String, TreeNode> = linkedMapOf(),
     )
 
+    /**
+     * 渲染时的状态对象，用来控制节点上限和是否发生截断。
+     */
     private class RenderState(
         private val maxNodes: Int,
     ) {
@@ -34,6 +54,14 @@ object PathTreeFormatter {
         }
     }
 
+    /**
+     * 把项目视图中的多选结果格式化成树形文本。
+     *
+     * 关键处理点：
+     * 1. 先按原始路径去重。
+     * 2. 再转换成统一的 AI 路径片段。
+     * 3. 如果某个目录已经被选中，就忽略它下面重复出现的子项，避免树重复展开。
+     */
     fun formatSelection(project: Project, selectedFiles: List<VirtualFile>): String {
         val entries = selectedFiles
             .distinctBy { it.path }
@@ -63,6 +91,12 @@ object PathTreeFormatter {
             .joinToString("\n\n") { renderSelectionGroup(it) }
     }
 
+    /**
+     * 为单个目录生成摘要树。
+     *
+     * 目录本身作为头部，下面按层级列出子节点；
+     * 超过深度或节点数限制时，会在末尾给出省略提示。
+     */
     fun formatDirectorySummary(
         project: Project,
         directory: VirtualFile,
@@ -79,6 +113,11 @@ object PathTreeFormatter {
         return lines.joinToString("\n")
     }
 
+    /**
+     * 渲染同一顶层分组下的树。
+     *
+     * 先提取所有项的公共目录前缀作为头部，再把剩余相对路径插入到内存树中。
+     */
     private fun renderSelectionGroup(entries: List<PathEntry>): String {
         val commonPrefix = commonDirectoryPrefix(entries)
         val header = commonPrefix.joinToString("/").ifEmpty { entries.first().segments.first() } + "/"
@@ -96,6 +135,11 @@ object PathTreeFormatter {
         return lines.joinToString("\n")
     }
 
+    /**
+     * 递归渲染目录摘要。
+     *
+     * 排序规则固定为“目录在前、名称按字母序”，这样复制结果更稳定。
+     */
     private fun renderDirectoryChildren(
         directory: VirtualFile,
         depth: Int,
@@ -134,6 +178,9 @@ object PathTreeFormatter {
         }
     }
 
+    /**
+     * 渲染内存树节点。
+     */
     private fun renderTree(node: TreeNode, prefix: String, lines: MutableList<String>) {
         val entries = node.children.entries
             .sortedWith(compareBy<Map.Entry<String, TreeNode>>({ !it.value.directory }, { it.key.lowercase() }))
@@ -146,6 +193,9 @@ object PathTreeFormatter {
         }
     }
 
+    /**
+     * 把相对路径片段插入树结构。
+     */
     private fun insert(root: TreeNode, segments: List<String>, directory: Boolean) {
         var current = root
         segments.forEachIndexed { index, segment ->
@@ -157,6 +207,11 @@ object PathTreeFormatter {
         }
     }
 
+    /**
+     * 计算一组选中项的公共目录前缀。
+     *
+     * 文件只参与其父目录前缀计算，目录本身则完整参与。
+     */
     private fun commonDirectoryPrefix(entries: List<PathEntry>): List<String> {
         val candidates = entries.map { entry ->
             if (entry.directory) entry.segments else entry.segments.dropLast(1)
@@ -173,6 +228,9 @@ object PathTreeFormatter {
         return first.take(index)
     }
 
+    /**
+     * 把 AI 路径转换为便于构树的数据结构。
+     */
     private fun toPathEntry(aiPath: String, directory: Boolean): PathEntry {
         val normalized = aiPath.replace('\\', '/').trimEnd('/')
         return PathEntry(
@@ -182,6 +240,9 @@ object PathTreeFormatter {
         )
     }
 
+    /**
+     * 判断 ancestor 是否是 descendant 的严格祖先路径。
+     */
     private fun isAncestor(ancestor: List<String>, descendant: List<String>): Boolean {
         if (ancestor.size >= descendant.size) {
             return false

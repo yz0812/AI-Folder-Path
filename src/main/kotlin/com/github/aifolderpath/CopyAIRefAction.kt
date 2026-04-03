@@ -24,6 +24,15 @@ class CopyAIRefAction : AnAction() {
 
     private val log = Logger.getInstance(CopyAIRefAction::class.java)
 
+    /**
+     * 复制“定义 + 调用点列表”。
+     *
+     * 核心流程：
+     * 1. 找到当前光标/选区对应的目标元素。
+     * 2. 先解析到引用目标，再尽量落到具体实现。
+     * 3. 格式化定义锚点与 usage 锚点。
+     * 4. 汇总后写入剪贴板。
+     */
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
@@ -66,6 +75,11 @@ class CopyAIRefAction : AnAction() {
         notify(project, result, NotificationType.INFORMATION)
     }
 
+    /**
+     * 定位当前操作针对的 PSI 元素。
+     *
+     * 如果有选区，默认取选区起点；否则取光标位置。
+     */
     private fun findTargetElement(
         editor: com.intellij.openapi.editor.Editor,
         psiFile: PsiFile,
@@ -75,6 +89,12 @@ class CopyAIRefAction : AnAction() {
         return psiFile.findElementAt(offset)
     }
 
+    /**
+     * 把当前位置解析成真正的“引用目标”。
+     *
+     * 优先按引用解析；如果当前位置不是引用表达式，
+     * 再退回到“是否正落在方法名/类名上”的判定。
+     */
     private fun resolveReferenceTarget(element: PsiElement): PsiElement? {
         val reference = (element.parent as? PsiReference) ?: element.reference
         val resolved = reference?.resolve()
@@ -95,6 +115,11 @@ class CopyAIRefAction : AnAction() {
         return null
     }
 
+    /**
+     * 尝试把目标进一步收敛到“最适合展示的定义”。
+     *
+     * 类直接返回；方法则优先找具体实现，避免接口/抽象方法输出过虚。
+     */
     private fun resolveToImplementation(target: PsiElement): PsiElement? {
         return when (target) {
             is PsiMethod -> findConcreteMethod(target)
@@ -103,6 +128,11 @@ class CopyAIRefAction : AnAction() {
         }
     }
 
+    /**
+     * 如果当前方法来自接口或抽象类，尽量找一个具体实现方法。
+     *
+     * 这里只取第一个命中的实现，追求的是可用锚点，不做复杂排序。
+     */
     private fun findConcreteMethod(method: PsiMethod): PsiMethod {
         val containingClass = method.containingClass ?: return method
         if (!containingClass.isInterface && !containingClass.hasModifierProperty(PsiModifier.ABSTRACT)) {
@@ -114,6 +144,12 @@ class CopyAIRefAction : AnAction() {
         return implMethods.firstOrNull() ?: method
     }
 
+    /**
+     * 收集调用点锚点列表。
+     *
+     * 这里同时搜索引用目标与最终定义目标，避免接口方法与实现方法之间遗漏引用。
+     * 收集后会去重、排序，并按上限截断。
+     */
     private fun collectUsageAnchors(
         project: com.intellij.openapi.project.Project,
         referenceTarget: PsiElement,
@@ -140,6 +176,11 @@ class CopyAIRefAction : AnAction() {
         )
     }
 
+    /**
+     * 生成定义位置的锚点文本。
+     *
+     * 优先输出带符号信息的锚点；实在拿不到上下文时，再退回纯路径。
+     */
     private fun formatDefinitionAnchor(
         project: com.intellij.openapi.project.Project,
         target: PsiElement,
@@ -149,6 +190,9 @@ class CopyAIRefAction : AnAction() {
             ?: PathResolver.resolve(project, targetFile)
     }
 
+    /**
+     * 把单个引用转换成可展示、可排序的 usage 锚点。
+     */
     private fun toUsageAnchor(
         project: com.intellij.openapi.project.Project,
         reference: PsiReference,
@@ -166,16 +210,27 @@ class CopyAIRefAction : AnAction() {
         )
     }
 
+    /**
+     * 判断当前位置是否正好落在方法名标识符上。
+     */
     private fun isOnMethodName(element: PsiElement, method: PsiMethod): Boolean {
         val nameId = method.nameIdentifier ?: return false
         return element.textRange.intersects(nameId.textRange)
     }
 
+    /**
+     * 判断当前位置是否正好落在类名标识符上。
+     */
     private fun isOnClassName(element: PsiElement, clazz: PsiClass): Boolean {
         val nameId = clazz.nameIdentifier ?: return false
         return element.textRange.intersects(nameId.textRange)
     }
 
+    /**
+     * 统一发送通知。
+     *
+     * 通知属于辅助反馈，失败时只记日志，不影响复制结果。
+     */
     private fun notify(
         project: com.intellij.openapi.project.Project,
         content: String,
@@ -193,12 +248,18 @@ class CopyAIRefAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
+    /**
+     * 只有编辑器和 PSI 文件同时存在时，才允许显示该动作。
+     */
     override fun update(e: AnActionEvent) {
         val editor = e.getData(CommonDataKeys.EDITOR)
         val psiFile = e.getData(CommonDataKeys.PSI_FILE)
         e.presentation.isEnabledAndVisible = editor != null && psiFile != null
     }
 
+    /**
+     * 可展示、可排序的单个 usage 项。
+     */
     private data class UsageAnchor(
         val displayText: String,
         val sortPath: String,
@@ -206,6 +267,9 @@ class CopyAIRefAction : AnAction() {
         val sortOffset: Int,
     )
 
+    /**
+     * usage 列表和省略数量的封装结果。
+     */
     private data class UsageList(
         val visibleUsages: List<String>,
         val omittedCount: Int,

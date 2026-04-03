@@ -115,11 +115,11 @@ AIFolderPath/
 - **已知文件或精确关键词**：直接用 `Read` / `Grep` / `Glob` / `Edit`
 
 ### idea MCP 适用场景
-- 查文件报错、警告：`get_file_problems`
 - 查符号定义、引用、文档：`get_symbol_info`
 - 安全重命名符号：`rename_refactoring`
-- 查项目模块、依赖、运行配置：`get_project_modules` / `get_project_dependencies` / `get_run_configurations`
 - 需要 IDE 索引搜索时：`search_in_files_by_text` / `search_in_files_by_regex` / `find_files_by_name_keyword`
 
-### idea MCP 禁止使用
+### idea MCP 禁止使用,严禁使用
 - 编译或执行现有运行配置：`build_project` / `execute_run_configuration`
+- 查文件报错、警告：`get_file_problems`
+- 查项目模块、依赖、运行配置：`get_project_modules` / `get_project_dependencies` / `get_run_configurations`

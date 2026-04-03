@@ -13,6 +13,12 @@ import java.awt.datatransfer.StringSelection
 class CopyAISymbolAnchorAction : AnAction() {
     private val log = Logger.getInstance(CopyAISymbolAnchorAction::class.java)
 
+    /**
+     * 复制当前符号锚点。
+     *
+     * 这是最紧凑的输出形式：优先给出 `路径 + 符号 + 行号范围`。
+     * 如果当前位置无法解析出符号上下文，则退回为纯路径，避免动作失效。
+     */
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
@@ -27,6 +33,9 @@ class CopyAISymbolAnchorAction : AnAction() {
         notify(project, result, NotificationType.INFORMATION)
     }
 
+    /**
+     * 统一发送复制完成通知。
+     */
     private fun notify(project: com.intellij.openapi.project.Project, content: String, type: NotificationType) {
         try {
             NotificationGroupManager.getInstance()
@@ -38,8 +47,14 @@ class CopyAISymbolAnchorAction : AnAction() {
         }
     }
 
+    /**
+     * update 放后台线程执行。
+     */
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
+    /**
+     * 只有编辑器和 PSI 文件可用时才展示动作。
+     */
     override fun update(e: AnActionEvent) {
         val editor = e.getData(CommonDataKeys.EDITOR)
         val psiFile = e.getData(CommonDataKeys.PSI_FILE)
