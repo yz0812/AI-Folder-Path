@@ -205,3 +205,6 @@ src/main/resources/META-INF/
 ## License
 
 MIT
+
+# 🎉致谢
+本项目在 [LINUX DO](https://linux.do/) 社区推广，感谢 LINUX DO 社区对开源项目的支持与认可。
