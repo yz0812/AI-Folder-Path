@@ -1,5 +1,6 @@
 package com.github.aifolderpath
 
+import com.github.aifolderpath.settings.ProjectPathSettings
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
@@ -42,7 +43,7 @@ object PathResolver {
      */
     private fun buildPath(project: Project, file: VirtualFile, appendDirectorySeparator: Boolean): String {
         val module = ModuleUtilCore.findModuleForFile(file, project)
-        val projectBasePath = project.basePath ?: return finalizePath(file.path, appendDirectorySeparator)
+        val projectBasePath = project.basePath ?: return finalizePath(project, file.path, appendDirectorySeparator)
 
         if (module != null) {
             // IntelliJ 一个模块可能配置多个 content root。
@@ -54,7 +55,7 @@ object PathResolver {
             if (moduleRoot != null) {
                 val relPath = VfsUtilCore.getRelativePath(file, moduleRoot, '/')
                 val path = if (relPath.isNullOrEmpty()) "@${module.name}" else "@${module.name}/$relPath"
-                return finalizePath(path, appendDirectorySeparator)
+                return finalizePath(project, path, appendDirectorySeparator)
             }
 
             // 某些情况下 IDE 模块存在，但 content root 无法给出理想结果。
@@ -63,7 +64,7 @@ object PathResolver {
             if (modulePath != null) {
                 val relPath = file.path.removePrefix(modulePath).trimStart('/', '\\').replace('\\', '/')
                 val path = if (relPath.isEmpty()) "@${module.name}" else "@${module.name}/$relPath"
-                return finalizePath(path, appendDirectorySeparator)
+                return finalizePath(project, path, appendDirectorySeparator)
             }
         }
 
@@ -71,7 +72,7 @@ object PathResolver {
         val projectName = project.name
         val relPath = file.path.removePrefix(projectBasePath).trimStart('/', '\\').replace('\\', '/')
         val path = if (relPath.isEmpty()) "@$projectName" else "@$projectName/$relPath"
-        return finalizePath(path, appendDirectorySeparator)
+        return finalizePath(project, path, appendDirectorySeparator)
     }
 
     /**
@@ -102,13 +103,24 @@ object PathResolver {
      * 这里统一把路径标准化为 `/`，避免 Windows 环境下输出不一致。
      * 目录场景则额外保留一个尾部分隔符，供调用方区分文件与目录。
      */
-    private fun finalizePath(path: String, appendDirectorySeparator: Boolean): String {
-        val normalizedPath = path.replace('\\', '/')
+    private fun finalizePath(project: Project, path: String, appendDirectorySeparator: Boolean): String {
+        val normalizedPath = applyPrefix(project, path.replace('\\', '/'))
         return if (appendDirectorySeparator) {
             "${normalizedPath.trimEnd('/', '\\')}\\"
         } else {
             normalizedPath
         }
+    }
+
+    /**
+     * 按当前项目设置给 AI 路径补前缀目录。
+     */
+    private fun applyPrefix(project: Project, path: String): String {
+        val prefixDirectory = ProjectPathSettings.getInstance(project).prefixDirectory
+        if (prefixDirectory.isEmpty()) {
+            return path
+        }
+        return "@$prefixDirectory/${path.removePrefix("@")}"
     }
 
     /**
