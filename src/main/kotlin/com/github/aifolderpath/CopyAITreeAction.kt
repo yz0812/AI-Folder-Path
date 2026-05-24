@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.github.aifolderpath.settings.NotificationSettings
 import java.awt.datatransfer.StringSelection
 
 class CopyAITreeAction : AnAction() {
@@ -59,6 +60,7 @@ class CopyAITreeAction : AnAction() {
      * 统一发送复制完成通知。
      */
     private fun notify(project: com.intellij.openapi.project.Project, content: String, type: NotificationType) {
+        if (type == NotificationType.INFORMATION && !NotificationSettings.getInstance().copyNotificationEnabled) return
         try {
             NotificationGroupManager.getInstance()
                 .getNotificationGroup("AIFolderPath.Notification")

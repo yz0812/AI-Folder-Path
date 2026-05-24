@@ -1,6 +1,7 @@
 package com.github.aifolderpath
 
 import com.github.aifolderpath.EditorSymbolContextResolver.EditorSymbolContext
+import com.github.aifolderpath.settings.NotificationSettings
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -236,6 +237,7 @@ class CopyAIRefAction : AnAction() {
         content: String,
         type: NotificationType,
     ) {
+        if (type == NotificationType.INFORMATION && !NotificationSettings.getInstance().copyNotificationEnabled) return
         try {
             NotificationGroupManager.getInstance()
                 .getNotificationGroup("AIFolderPath.Notification")

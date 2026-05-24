@@ -11,6 +11,7 @@ import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import com.github.aifolderpath.settings.NotificationSettings
 import java.awt.datatransfer.StringSelection
 
 class CopyAIPathAction : AnAction() {
@@ -56,6 +57,7 @@ class CopyAIPathAction : AnAction() {
         CopyPasteManager.getInstance().setContents(StringSelection(result))
 
         // 通知失败不影响主流程，剪贴板写入成功才是核心目标。
+        if (!NotificationSettings.getInstance().copyNotificationEnabled) return
         try {
             NotificationGroupManager.getInstance()
                 .getNotificationGroup("AIFolderPath.Notification")

@@ -28,6 +28,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="AIFolderPath.Notification" displayType="BALLOON"/>
+        <applicationService serviceImplementation="com.github.aifolderpath.settings.NotificationSettings"/>
         <projectService serviceImplementation="com.github.aifolderpath.settings.ProjectPathSettings"/>
         <projectConfigurable
                 parentId="tools"

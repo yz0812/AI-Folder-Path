@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.ide.CopyPasteManager
+import com.github.aifolderpath.settings.NotificationSettings
 import java.awt.datatransfer.StringSelection
 
 class CopyAISymbolAnchorAction : AnAction() {
@@ -37,6 +38,7 @@ class CopyAISymbolAnchorAction : AnAction() {
      * 统一发送复制完成通知。
      */
     private fun notify(project: com.intellij.openapi.project.Project, content: String, type: NotificationType) {
+        if (type == NotificationType.INFORMATION && !NotificationSettings.getInstance().copyNotificationEnabled) return
         try {
             NotificationGroupManager.getInstance()
                 .getNotificationGroup("AIFolderPath.Notification")
