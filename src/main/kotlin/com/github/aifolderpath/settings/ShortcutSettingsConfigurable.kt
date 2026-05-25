@@ -71,6 +71,7 @@ class ShortcutSettingsConfigurable(
     }
 
     override fun disposeUIResources() {
+        panel?.dispose()
         panel = null
         loadedState = null
     }

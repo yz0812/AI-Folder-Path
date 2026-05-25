@@ -133,17 +133,40 @@ open class ShortcutKeymapService(
         targetKeymap: Keymap,
         editablePage: EditableShortcutPage,
     ) {
-        editablePage.cards.forEach { card ->
-            val actionIdsToRewrite = setOf(card.definition.actionId) + ignoredConflictOwners(card.definition.actionId)
+        val actionIdsToRewrite = editablePage.cards
+            .flatMap { card -> setOf(card.definition.actionId) + ignoredConflictOwners(card.definition.actionId) }
+            .toSet()
+        val originalShortcuts = actionIdsToRewrite.associateWith { actionId ->
+            targetKeymap.getShortcuts(actionId).filterIsInstance<KeyboardShortcut>()
+        }
+
+        try {
             actionIdsToRewrite.forEach { actionId ->
                 targetKeymap.getShortcuts(actionId)
                     .filterIsInstance<KeyboardShortcut>()
                     .forEach { shortcut -> targetKeymap.removeShortcut(actionId, shortcut) }
             }
 
-            card.editedShortcut?.let { shortcut ->
-                targetKeymap.addShortcut(card.definition.actionId, shortcut)
+            editablePage.cards.forEach { card ->
+                card.editedShortcut?.let { shortcut ->
+                    targetKeymap.addShortcut(card.definition.actionId, shortcut)
+                }
             }
+        } catch (e: Exception) {
+            restoreShortcuts(targetKeymap, originalShortcuts)
+            throw e
+        }
+    }
+
+    private fun restoreShortcuts(
+        targetKeymap: Keymap,
+        originalShortcuts: Map<String, List<KeyboardShortcut>>,
+    ) {
+        originalShortcuts.forEach { (actionId, shortcuts) ->
+            targetKeymap.getShortcuts(actionId)
+                .filterIsInstance<KeyboardShortcut>()
+                .forEach { shortcut -> targetKeymap.removeShortcut(actionId, shortcut) }
+            shortcuts.forEach { shortcut -> targetKeymap.addShortcut(actionId, shortcut) }
         }
     }
 

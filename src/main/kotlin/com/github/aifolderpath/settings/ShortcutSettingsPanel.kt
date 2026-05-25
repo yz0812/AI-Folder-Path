@@ -158,6 +158,10 @@ class ShortcutSettingsPanel(initialState: EditableShortcutPage) {
 
     fun pageMessage(): String = pageMessageLabel.text
 
+    fun dispose() {
+        cardWidgets.values.forEach { it.field.dispose() }
+    }
+
     fun isCardControlsEnabled(actionId: String): Boolean {
         val widgets = cardWidgets.getValue(actionId)
         return widgets.field.isEnabled && widgets.recordButton.isEnabled && widgets.clearButton.isEnabled && widgets.restoreDefaultButton.isEnabled

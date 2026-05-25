@@ -22,12 +22,16 @@
     </ul>
     ]]></description>
 
+    <resource-bundle>messages.AIFolderPathBundle</resource-bundle>
+
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends optional="true" config-file="aifolderpath-with-java.xml">com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="AIFolderPath.Notification" displayType="BALLOON"/>
+        <notificationGroup id="AIFolderPath.Notification"
+                           displayType="BALLOON"
+                           key="notification.group.aifolderpath"/>
         <applicationService serviceImplementation="com.github.aifolderpath.settings.NotificationSettings"/>
         <projectService serviceImplementation="com.github.aifolderpath.settings.ProjectPathSettings"/>
         <projectConfigurable

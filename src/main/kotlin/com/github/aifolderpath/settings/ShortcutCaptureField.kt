@@ -92,6 +92,10 @@ class ShortcutCaptureField(
 
     fun displayText(): String = text
 
+    fun dispose() {
+        finalizeTimer.stop()
+    }
+
     override fun processKeyEvent(e: KeyEvent) {
         if (e.id != KeyEvent.KEY_PRESSED || !isEnabled) {
             return
