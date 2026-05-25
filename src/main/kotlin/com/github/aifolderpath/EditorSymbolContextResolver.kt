@@ -35,6 +35,15 @@ object EditorSymbolContextResolver {
         }
     }
 
+    private data class NamedContext(
+        val function: PsiNameIdentifierOwner?,
+        val type: PsiNameIdentifierOwner?,
+        val fallback: PsiNameIdentifierOwner?,
+    ) {
+        val lineTarget: PsiNameIdentifierOwner?
+            get() = function ?: type ?: fallback
+    }
+
     fun resolve(project: Project, editor: Editor, psiFile: PsiFile): EditorSymbolContext? {
         val selectionModel = editor.selectionModel
         val startOffset = if (selectionModel.hasSelection()) {
@@ -85,15 +94,14 @@ object EditorSymbolContextResolver {
         val document = PsiDocumentManager.getInstance(project).getDocument(psiFile)
             ?: FileDocumentManager.getInstance().getDocument(virtualFile)
         val currentLine = toLineNumber(document, currentOffset)
-        val symbol = findNamedSymbol(element)
-        val container = findContainingNamedSymbol(symbol)
-        val isExactNameSelection = symbol?.let {
+        val namedContext = findNamedContext(element)
+        val isExactFunctionNameSelection = namedContext.function?.let {
             useExplicitRange && isNameSelection(it, rangeStartOffset, rangeEndOffset)
         } == true
         val lineTarget = if (useExplicitRange) {
-            symbol?.takeIf { isExactNameSelection }
+            namedContext.function?.takeIf { isExactFunctionNameSelection }
         } else {
-            symbol
+            namedContext.lineTarget
         }
         val path = PathResolver.resolve(project, virtualFile)
 
@@ -104,41 +112,48 @@ object EditorSymbolContextResolver {
             toLineNumber(document, endOffset)
         } ?: if (useExplicitRange) toLineNumber(document, rangeEndOffset) else currentLine
 
-        val symbolName = symbol?.name?.takeIf { it.isNotBlank() }
-        val containerName = container?.name?.takeIf { it.isNotBlank() }
+        val functionName = namedContext.function?.name?.takeIf { it.isNotBlank() }
+        val typeName = namedContext.type?.name?.takeIf { it.isNotBlank() }
+        val fallbackName = namedContext.fallback?.name?.takeIf { it.isNotBlank() }
         return EditorSymbolContext(
             path = path,
             currentLine = currentLine,
             startLine = startLine,
             endLine = endLine,
-            className = containerName ?: symbolName,
-            methodSignature = if (containerName != null) symbolName else null,
-            isExactMethodNameSelection = isExactNameSelection,
+            className = typeName ?: if (functionName == null) fallbackName else null,
+            methodSignature = functionName,
+            isExactMethodNameSelection = isExactFunctionNameSelection,
         )
     }
 
-    private fun findNamedSymbol(element: PsiElement?): PsiNameIdentifierOwner? {
+    private fun findNamedContext(element: PsiElement?): NamedContext {
         var current = element
+        var function: PsiNameIdentifierOwner? = null
+        var type: PsiNameIdentifierOwner? = null
+        var fallback: PsiNameIdentifierOwner? = null
+
         while (current != null) {
             val owner = current as? PsiNameIdentifierOwner
             if (owner != null && owner.nameIdentifier != null && !owner.name.isNullOrBlank()) {
-                return owner
+                when {
+                    function == null && isFunctionLike(owner) -> function = owner
+                    type == null && isTypeLike(owner) -> type = owner
+                    fallback == null -> fallback = owner
+                }
             }
             current = current.parent
         }
-        return null
+        return NamedContext(function = function, type = type, fallback = fallback)
     }
 
-    private fun findContainingNamedSymbol(symbol: PsiNameIdentifierOwner?): PsiNameIdentifierOwner? {
-        var current = symbol?.parent
-        while (current != null) {
-            val owner = current as? PsiNameIdentifierOwner
-            if (owner != null && owner.nameIdentifier != null && !owner.name.isNullOrBlank()) {
-                return owner
-            }
-            current = current.parent
-        }
-        return null
+    private fun isFunctionLike(owner: PsiNameIdentifierOwner): Boolean {
+        val className = owner.javaClass.name.lowercase()
+        return "method" in className || "function" in className || "fun" in className
+    }
+
+    private fun isTypeLike(owner: PsiNameIdentifierOwner): Boolean {
+        val className = owner.javaClass.name.lowercase()
+        return "class" in className || "interface" in className || "enum" in className || "objectdeclaration" in className
     }
 
     private fun normalizeEndOffset(startOffset: Int, endOffset: Int): Int {
