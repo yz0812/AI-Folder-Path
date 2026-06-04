@@ -18,7 +18,7 @@ object PluginShortcutDefinitions {
         actionId = "AIFolderPath.CopyOptionsAction",
         label = "Copy AI",
         defaultShortcut = KeyboardShortcut(KeyStroke.getKeyStroke("alt P"), null),
-        description = "按当前 Alt+P 默认动作复制 AI 路径或增强引用",
+        description = "按当前 Alt+P 默认动作复制 AI 路径、增强引用或 Git 修订号",
     )
 
     val copyAiUsages = ShortcutActionDefinition(

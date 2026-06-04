@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataKey
 
 class CopyAIOptionsAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -29,6 +30,10 @@ class CopyAIOptionsAction : AnAction() {
 
     private fun resolveDelegateAction(e: AnActionEvent): AnAction? {
         val actionManager = ActionManager.getInstance()
+        if (hasVcsLogCommitSelection(e)) {
+            actionManager.getAction(REVISION_ACTION_ID)?.let { return it }
+        }
+
         val selectedActionId = AltPActionOptionStore.get().actionId
         val preferredActionId = if (e.getData(CommonDataKeys.EDITOR) == null && selectedActionId in editorOnlyActionIds) {
             COMPAT_PATH_ACTION_ID
@@ -42,8 +47,14 @@ class CopyAIOptionsAction : AnAction() {
         return actionManager.getAction(COMPAT_PATH_ACTION_ID)
     }
 
+    private fun hasVcsLogCommitSelection(e: AnActionEvent): Boolean {
+        return e.getData(VCS_LOG_COMMIT_SELECTION_KEY) != null
+    }
+
     companion object {
         private const val COMPAT_PATH_ACTION_ID = "AIFolderPath.CopyAction"
+        private const val REVISION_ACTION_ID = "AIFolderPath.CopyRevisionAction"
+        private val VCS_LOG_COMMIT_SELECTION_KEY = DataKey.create<Any>("Vcs.Log.Commit.Selection")
         private val editorOnlyActionIds = setOf(
             "AIFolderPath.CopyAnchorAction",
             "AIFolderPath.CopyContextAction",

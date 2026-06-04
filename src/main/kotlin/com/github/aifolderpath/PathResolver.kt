@@ -25,6 +25,19 @@ object PathResolver {
         return buildPath(project, directory, appendDirectorySeparator = true)
     }
 
+    fun resolvePath(project: Project, path: String): String {
+        val projectBasePath = project.basePath ?: return finalizePath(project, path, appendDirectorySeparator = false)
+        val normalizedBasePath = projectBasePath.replace('\\', '/').trimEnd('/')
+        val normalizedFilePath = path.replace('\\', '/')
+        val relPath = if (normalizedFilePath == normalizedBasePath) {
+            ""
+        } else {
+            normalizedFilePath.removePrefix("$normalizedBasePath/")
+        }
+        val aiPath = if (relPath.isEmpty()) "@${project.name}" else "@$relPath"
+        return finalizePath(project, aiPath, appendDirectorySeparator = false)
+    }
+
     /**
      * 统一构建文件或目录的 AI 路径。
      */

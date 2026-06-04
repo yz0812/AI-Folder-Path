@@ -1,0 +1,14 @@
+<idea-plugin>
+    <actions>
+        <action id="AIFolderPath.CopyRevisionAction"
+                class="com.github.aifolderpath.CopyAIRevisionAction"
+                text="Copy AI Revision"
+                description="Copy selected commit revision or revision plus file in AI-friendly format"/>
+        <action id="AIFolderPath.CopyGitInfoAction"
+                class="com.github.aifolderpath.CopyAIGitInfoAction"
+                text="Copy AI Git Info"
+                description="Copy selected commit information in AI-friendly format">
+            <add-to-group group-id="Vcs.Log.ContextMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
