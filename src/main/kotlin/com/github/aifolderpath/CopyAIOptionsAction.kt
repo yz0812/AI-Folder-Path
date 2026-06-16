@@ -10,7 +10,11 @@ import com.intellij.openapi.actionSystem.DataKey
 
 class CopyAIOptionsAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        resolveDelegateAction(e)?.actionPerformed(e)
+        val delegate = resolveDelegateAction(e)
+        if (delegate != null) {
+            val actionManager = ActionManager.getInstance()
+            actionManager.tryToExecute(delegate, e.inputEvent, null, e.place, true)
+        }
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -18,7 +22,9 @@ class CopyAIOptionsAction : AnAction() {
     override fun update(e: AnActionEvent) {
         val delegate = resolveDelegateAction(e)
         if (delegate != null) {
-            delegate.update(e)
+            // 通过创建新的 AnActionEvent 让委托 Action 更新其 Presentation
+            val delegateEvent = AnActionEvent.createFromAnAction(delegate, e.inputEvent, e.place, e.dataContext)
+            e.presentation.copyFrom(delegateEvent.presentation)
             return
         }
 
